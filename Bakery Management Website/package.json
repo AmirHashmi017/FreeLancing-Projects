@@ -1,0 +1,17 @@
+{
+  "name": "bakery-management-website",
+  "version": "1.0.0",
+  "description": "This repository contains the complete code for a ***front-end only*** model of a multi-page website for a bakery made using HTML, CSS, JavaScript, Jquery and Bootstrap.",
+  "main": "helpJS.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.0"
+  }
+}

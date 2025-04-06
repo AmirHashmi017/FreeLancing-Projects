@@ -87,6 +87,47 @@
             margin: 0;
         }
 
+        .message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    background: #333;
+    color: white;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .message-box.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .message-box.success {
+    background: #4CAF50;
+  }
+  
+  .message-box.error {
+    background: #F44336;
+  }
+  
+  .message-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+  }
+  
         .drop-content {
             display: none;
             position: absolute;
@@ -1312,6 +1353,7 @@
 
     </style>
 
+<script src="Backend/FeedBack.js"></script>
 </head>
 
 <body>
@@ -1428,19 +1470,31 @@
     </div>
 
 	<!--chat box--->
-	<button class="open-button" onclick="openForm()"><i class="fas fa-envelope-open-text fa-4x"></i></button>
-
-	<div class="chat-popup" id="myForm">
-	  <form action="#" class="form-container">
-		<h1>FeedBack</h1>
-
-		<label for="msg"><b>Message</b></label>
-		<textarea placeholder="Type message.." name="msg" required></textarea>
-
-		<button type="submit" class="btn">Submit</button>
-		<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
-	  </form>
-	</div>
+	<button class="open-button" onclick="openForm()">
+        <i class="fas fa-envelope-open-text fa-4x"></i>
+      </button>
+      
+      <div class="chat-popup" id="feedbackForm">
+        <form class="form-container" onsubmit="submitFeedback(event)">
+          <h1>Feedback</h1>
+          
+          <div class="user-info">
+            <span id="feedbackUsername"></span>
+          </div>
+          
+          <label for="feedbackMessage"><b>Message</b></label>
+          <textarea 
+            id="feedbackMessage" 
+            placeholder="Type your feedback here..." 
+            required
+          ></textarea>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn">Submit</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+          </div>
+        </form>
+      </div>
 
     <!--  I T E M S  -->
 
@@ -1734,6 +1788,9 @@
 		</div>
 		</div>
 	</div>
-
+    <div id="messageBox" class="message-box">
+		<span id="messageText"></span>
+		<button class="message-close" onclick="hideMessage()">×</button>
+	  </div>
 </body>
 </html>

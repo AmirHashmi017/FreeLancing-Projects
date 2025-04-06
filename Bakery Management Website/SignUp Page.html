@@ -72,6 +72,46 @@
 				font-weight:bold;
 				font-size:3.2vh;
 			}
+			.message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    background: #333;
+    color: white;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .message-box.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .message-box.success {
+    background: #4CAF50;
+  }
+  
+  .message-box.error {
+    background: #F44336;
+  }
+  
+  .message-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+  }
 			
 			@media only screen and (max-width:75em){
 				#signUp{
@@ -230,33 +270,39 @@
 				}
 			}
 		</style>
+		<script src="Backend/UserAccounts.js"></script>
 	</head>
 	<body>
-	
+		
 	<div id="signUp">
 	<div id="letsGo" style="font-size:10vh;font-family: 'Great Vibes', cursive;">Let's Go!!</div>
-	
-	<form>
+	<!-- Add this right after your form opening tag -->
+
+	<form id="signupForm" onsubmit="handleSignup(event)">
 	
 		<label for="fname" class="field"><b>Name</b><span style="color:red;"><b>*</b></span></b></label>
-		<input class="inp" type="text" name="name" id="fname" pattern=[A-Za-z] title="Can only contain alphabets." placeholder="Enter your Name" size="35" required/>
+		<input class="inp" type="text" name="name" id="fname"   placeholder="Enter your Name" size="35" required/>
 		
 		<label for="mail" class="field"><b>Email</b></label>
-		<input class="inp" type="email" name="email" id="mail" placeholder="Enter your Email id" size="35"/>
+		<input class="inp" type="email" name="email" id="mail" placeholder="Enter your Email id" size="35" required/>
 		
 		<label for="num" class="field"><b>Mobile No.</b><span style="color:red;"><b>*</b></span></label>
 		<input class="inp" type="tel" name="mobile" id="num" placeholder="Enter your Mobile number" size="35" required/>
 		
 		<label for="userN" class="field"><b>Username</b><span style="color:red;"><b>*</b></span></label>
-		<input class="inp" type="text" name="username" id="userN" pattern="[a-z0-9_]" title="Can only contain lowercase letters, numbers and underscore." placeholder="Enter your Username" size="35" required/>
+		<input class="inp" type="text" name="username" id="userN"  placeholder="Enter your Username" size="35" required/>
 		
 		<label for="pass" class="field"><b>Password</b><span style="color:red;"><b>*</b></span></label>
-		<input class="inp" type="password" name="password" id="pass" pattern="(?=.\d)(?=.[a-z])(?=.*[A-Z).{8,}" title="Enter atleast 8 or more characters with atleast one uppercase letter, one lowercase letter and one number." placeholder="Enter your Password" size="35" required/>
+		<input class="inp" type="password" name="password" id="pass"  placeholder="Enter your Password" size="35" required/>
 		
 		<button type="submit" value="Submit" class="btn" name="submit" style="font-size:2.7vh; align-self: stretch; margin-bottom: 0.6rem; ">Sign Up</button>
 		
-		Already have an account? <a href="" class="login"><u>Click here to login!</u></a>
+		Already have an account? <a href="SignIn.html" class="login"><u>Click here to login!</u></a>
 	</form>
 	</div>
+	<div id="messageBox" class="message-box">
+		<span id="messageText"></span>
+		<button class="message-close" onclick="hideMessage()">×</button>
+	  </div>
 	</body>
 </html>
