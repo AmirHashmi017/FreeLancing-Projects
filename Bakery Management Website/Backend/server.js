@@ -1,12 +1,32 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+// In your server.js
+const { generateRevenueReportPDF } = require('./pdfGenerator');
+const path = require('path');
+const fs = require('fs');
+
+// Ensure reports directory exists
+const reportsDir = path.join(__dirname, 'reports');
+if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir);
+}
+
+// PDF Generation Endpoint
+
+// PDF Generation Endpoint
+
+
+
+// Email configuration (add this near your DB config)
+
 
 const pool = mysql.createPool({
   host: 'localhost',
@@ -18,6 +38,52 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // or your email provider
+    auth: {
+      user: 'amirhashmi017@gmail.com', // your business email
+      pass: 'pzcn hvul syyz gaka' // use app-specific password for security
+    }
+  });
+  
+  // Email sending function (add this helper function)
+  async function sendOrderConfirmationEmail(email, orderId) {
+    try {
+      const mailOptions = {
+        from: 'Sweet Byte Bakers',
+        to: email,
+        subject: 'Sweet Byte Bakers - Order Confirmation',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #e67e22;">Thank You for Your Order!</h2>
+            <p>Your order <strong>#${orderId}</strong> has been placed successfully.</p>
+            
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <h4 style="color: #e67e22;">Next Steps:</h4>
+              <ol>
+                <li>Pay via JazzCash to <strong>0321-1234567</strong></li>
+                <li>Send payment screenshot to <strong>0321-9876543</strong> on WhatsApp</li>
+                <li>Track your order on our website</li>
+              </ol>
+            </div>
+            
+            <p>We'll notify you when your order ships. For any questions, reply to this email.</p>
+            
+            <div style="margin-top: 30px; text-align: center;">
+              <img src="https://your-website.com/logo.png" alt="Sweet Byte Bakers" style="max-width: 200px;">
+              <p style="color: #888; font-size: 12px;">Sweet Byte Bakers © ${new Date().getFullYear()}</p>
+            </div>
+          </div>
+        `
+      };
+  
+      await transporter.sendMail(mailOptions);
+      console.log('Email sent to:', email);
+    } catch (error) {
+      console.error('Email sending error:', error);
+    }
+  }
 
 // Signup endpoint
 app.post('/api/signup', async (req, res) => {
@@ -46,6 +112,44 @@ app.post('/api/signup', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.post('/api/reports/generate-pdf', async (req, res) => {
+    try {
+        const reportData = req.body;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `revenue-report-${timestamp}.pdf`;
+        const filePath = path.join(reportsDir, filename);
+        
+        await generateRevenueReportPDF(reportData, filePath);
+        
+        res.json({ 
+            success: true,
+            filename
+        });
+    } catch (error) {
+        console.error('PDF generation error:', error);
+        res.status(500).json({ error: 'Failed to generate PDF' });
+    }
+});
+
+// PDF Download Endpoint
+app.get('/api/reports/download-pdf', (req, res) => {
+    const { filename } = req.query;
+    const filePath = path.join(reportsDir, filename);
+    
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'File not found' });
+    }
+    
+    res.download(filePath, `SweetByteBakers-${filename}`, (err) => {
+        if (err) {
+            console.error('Download error:', err);
+        }
+        // Optionally delete the file after download
+        // fs.unlinkSync(filePath);
+    });
+});
+
 
 // Signin endpoint
 app.post('/api/signin', async (req, res) => {
@@ -131,6 +235,12 @@ app.post('/api/feedback', async (req, res) => {
         [username, email, shipping_address, total_amount, JSON.stringify(items)]
       );
   
+      sendOrderConfirmationEmail(email, result.insertId)
+      .catch(emailError => {
+        console.error('Email failed to send:', emailError);
+        // Don't fail the request if email fails
+      });
+
       res.status(201).json({
         success: true,
         order_id: result.insertId,
@@ -174,6 +284,103 @@ app.post('/api/feedback', async (req, res) => {
     }
   });
   
+  // Report API Endpoints
+// Report API Endpoints
+app.get('/api/reports/revenue', async (req, res) => {
+    try {
+        const { timeframe } = req.query;
+        
+        // Validate timeframe
+        const validTimeframes = ['1month', '2months', '6months', '1year'];
+        if (!validTimeframes.includes(timeframe)) {
+            return res.status(400).json({ error: 'Invalid timeframe' });
+        }
+
+        // Calculate date range
+        const dateRange = calculateDateRange(timeframe);
+        
+        // Get revenue data
+        const [results] = await pool.promise().query(
+            `SELECT 
+                DATE_FORMAT(order_date, '%Y-%m') AS month,
+                COUNT(order_id) AS order_count,
+                SUM(total_amount) AS total_revenue,
+                AVG(total_amount) AS average_order_value
+             FROM orders
+             WHERE order_date >= ? AND order_status != 'rejected'
+             GROUP BY DATE_FORMAT(order_date, '%Y-%m')
+             ORDER BY month DESC`,
+            [dateRange.startDate]
+        );
+
+        // Get all orders in the timeframe first
+        const [allOrders] = await pool.promise().query(
+            `SELECT items FROM orders 
+             WHERE order_date >= ? AND order_status != 'rejected'`,
+            [dateRange.startDate]
+        );
+
+        // Process items in JavaScript instead of SQL
+        const productMap = new Map();
+        
+        allOrders.forEach(order => {
+            const items = JSON.parse(order.items);
+            items.forEach(item => {
+                const existing = productMap.get(item.name) || {
+                    name: item.name,
+                    total_quantity: 0,
+                    total_revenue: 0
+                };
+                existing.total_quantity += item.quantity;
+                existing.total_revenue += item.price * item.quantity;
+                productMap.set(item.name, existing);
+            });
+        });
+
+        // Convert to array and sort by revenue
+        const topProducts = Array.from(productMap.values())
+            .sort((a, b) => b.total_revenue - a.total_revenue)
+            .slice(0, 5);
+
+        res.json({
+            success: true,
+            timeframe,
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+            revenueData: results,
+            topProducts,
+            generatedAt: new Date()
+        });
+
+    } catch (error) {
+        console.error('Report generation error:', error);
+        res.status(500).json({ error: 'Failed to generate report' });
+    }
+});
+
+// Helper function to calculate date ranges
+function calculateDateRange(timeframe) {
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch(timeframe) {
+        case '1month':
+            startDate.setMonth(startDate.getMonth() - 1);
+            break;
+        case '2months':
+            startDate.setMonth(startDate.getMonth() - 2);
+            break;
+        case '6months':
+            startDate.setMonth(startDate.getMonth() - 6);
+            break;
+        case '1year':
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
+    }
+    
+    return { startDate, endDate };
+}
+
   // Get orders for a specific user
   app.get('/api/orders/:username', async (req, res) => {
     try {
