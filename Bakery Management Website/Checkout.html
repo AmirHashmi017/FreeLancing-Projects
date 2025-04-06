@@ -32,6 +32,7 @@
             background-color: #64dfdf;
             font-family: "Helvetica Neue", HelveticaNeue, Arial, sans-serif;
             margin: 0px;
+            overflow-x: hidden;
         }
 
         /* N A V I G A T I O N */
@@ -102,6 +103,64 @@
         .drop_down:hover .drop-content {
             display: block;
         }
+
+        .message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    background: #333;
+    color: white;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .message-box.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .message-box.success {
+    background: #4CAF50;
+  }
+  
+  .message-box.error {
+    background: #F44336;
+  }
+  
+  .message-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0 0 10px;
+  }
+  /* Add to your stylesheet */
+.modal-content {
+  animation: modalopen 0.5s;
+}
+
+@keyframes modalopen {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#confirmOkBtn:hover {
+  background-color: #45a049 !important;
+}
+
+.payment-instructions {
+  border-left: 4px solid #4CAF50;
+}
 
         @media screen and (max-width: 920px) {
             .navtop input[type=text] {
@@ -180,6 +239,7 @@
         }
 
     </style>
+    <script src="Backend/OrdersPlacement.js"></script>
 </head>
 <body>
     <!--  N A V I G A T I O N   B A R  -->
@@ -239,10 +299,10 @@
                 <div class="card">
                     <div class="card-body">
                         <h1 class="text-center" style="margin-bottom:5%;" ><u>Your Details For Order</u></h1>
-                        <form action="#">
+                        <form  onsubmit="handleCheckout(event)">
                             <div class="form-group">
                                 <label for="exampleInputEmail1" class="form-label">Email address</label>
-                                <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                <input type="email" class="form-control" id="ShippingEmail" aria-describedby="emailHelp">
                                 <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                               </div>
                               <div class="form-group">
@@ -251,11 +311,11 @@
                               </div>
                               <div class="form-group">
                                 <label for="exampleFormControlTextarea1">Your Shipping Address</label>
-                                <textarea class="form-control" placeholder="Enter your address...." id="exampleFormControlTextarea1" rows="3"></textarea>
+                                <textarea class="form-control" placeholder="Enter your address...." id="ShippingAddress" rows="3"></textarea>
                               </div>
                               <div class="container">
                                   <button class="btn btn-success" style="color:white">Order Now</button>
-                                  <button class="btn btn-primary" style="color:white">Continue Shopping</button>
+                                  
                               </div>
                         </form>
                     </div>
@@ -289,6 +349,33 @@
         </div>
         </div>
     </div>
+    <div id="orderConfirmationModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5)">
+        <div class="modal-content" style="background-color:#fefefe; margin:15% auto; padding:20px; border:1px solid #888; width:80%; max-width:500px; border-radius:10px">
+          <h2 style="color:#4CAF50">Order Placed Successfully!</h2>
+          <p>Your order has been received.</p>
+          
+          <div class="payment-instructions" style="background:#f8f9fa; padding:15px; border-radius:5px; margin:15px 0">
+            <h4>Payment Instructions:</h4>
+            <ol>
+              <li>Pay <b id="modalTotalAmount"></b> via JazzCash</li>
+              <li>JazzCash No: <b>0321-1234567</b></li>
+              <li>Send payment screenshot to <b>0321-9876543</b> on WhatsApp</li>
+            </ol>
+            <p style="color:#dc3545; font-weight:bold">Note: Your order will be processed after payment confirmation</p>
+          </div>
+          
+          <button id="confirmOkBtn" style="background-color:#4CAF50; color:white; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; float:right">
+            OK
+          </button>
+          <div style="clear:both"></div>
+        </div>
+      </div>
+<div id="messageBox" class="message-box">
+		<span id="messageText"></span>
+		<button class="message-close" onclick="hideMessage()">×</button>
+	  </div>
+
+      <!-- Order Confirmation Modal -->
 
 </body>
 </html>

@@ -57,6 +57,7 @@ function updateCart(){
         $(".checkout-btn").addClass('disabled');
     }
     else{
+        $(".checkout-btn").removeClass('disabled');
         //there is some in cart to show
         console.log(cart);
         $(".cart-items").html(`( ${cart.length} )`);
