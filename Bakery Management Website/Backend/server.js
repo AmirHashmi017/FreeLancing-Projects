@@ -208,7 +208,7 @@ app.post('/api/feedback', async (req, res) => {
   app.get('/api/feedback', async (req, res) => {
     try {
       const [feedbacks] = await pool.promise().query(
-        'SELECT feedbackid, username, feedbacktext, created_at FROM feedback ORDER BY created_at DESC'
+        'SELECT feedbackid, username, feedbacktext FROM feedback'
       );
   
       res.json({ success: true, feedbacks });

@@ -1,23 +1,8 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-function showMessage(text, type = 'success') {
-    const box = document.getElementById('messageBox');
-    const textEl = document.getElementById('messageText');
-    
-    box.className = `message-box ${type}`;
-    textEl.textContent = text;
-    box.classList.add('show');
-    
-    // Auto-hide after 5 seconds
-    setTimeout(hideMessage, 5000);
-    
-  }
-  
-  function hideMessage() {
-    const box = document.getElementById('messageBox');
-    box.classList.remove('show');
-  }
+
+
 function generateRevenueReportPDF(reportData, filePath) {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({ margin: 50 });
@@ -166,7 +151,7 @@ function generateRevenueReportPDF(reportData, filePath) {
         doc.end();
        
         stream.on('finish', () => {
-            showMessage("PDF generated and downloaded successfully.See Reports Folder.")
+            
             resolve(filePath);
         });
         stream.on('error', reject);

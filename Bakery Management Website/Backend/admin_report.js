@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('#generatereport').addEventListener('click', function(e) {
         e.preventDefault();
         reportModal.show();
+        
+        // Reset modal state when opened
+        previewDiv.style.display = 'none';
+        downloadBtn.style.display = 'none';
+        previewContent.innerHTML = '';
     });
     
     // Generate report button handler
@@ -52,6 +57,16 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadBtn.href = `http://localhost:3000/api/reports/download-pdf?filename=${pdfData.filename}`;
             downloadBtn.style.display = 'inline-block';
             
+            // Show success message when download is clicked
+            downloadBtn.addEventListener('click', function() {
+                setTimeout(() => {
+                    showMessage('success', 'PDF downloaded successfully!');
+                }, 1000);
+            });
+            
+            // Show success message for PDF generation
+            showMessage('success', 'PDF generated successfully! Click Download to save.');
+            
         } catch (error) {
             console.error('Report generation error:', error);
             previewContent.innerHTML = `
@@ -59,10 +74,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${error.message}
                 </div>
             `;
+            showMessage('error', error.message);
         } finally {
             generateBtn.disabled = false;
             spinner.style.display = 'none';
         }
+    });
+    
+    // Show message when modal is closed
+    reportModal._element.addEventListener('hidden.bs.modal', function() {
+        showMessage('success', 'Report PDF is ready for download!');
     });
     
     function displayReportPreview(reportData) {
@@ -110,5 +131,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatDate(dateString) {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+    
+    // Message functions
+    function showMessage(type, message) {
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        
+        messageBox.className = 'message-box show ' + type;
+        messageText.textContent = message;
+        
+        // Auto-hide after 5 seconds
+        setTimeout(hideMessage, 5000);
+    }
+
+    function hideMessage() {
+        document.getElementById('messageBox').className = 'message-box';
     }
 });
