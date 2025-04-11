@@ -1,5 +1,8 @@
+
+
+
 from chatbot import chatbot
-from flask import Flask, render_template, request,session,logging,url_for,redirect,flash
+from flask import Flask, render_template, request, session, logging, url_for, redirect, flash
 from flask_recaptcha import ReCaptcha
 import mysql.connector
 import os
@@ -68,8 +71,6 @@ def login_validation():
     else:
         flash('Invalid credentials !!!')
         return redirect('/')
-    # return "The Email is {} and the Password is {}".format(email,password)
-    # return render_template('register.html')
 
 @app.route('/add_user',methods=['POST'])
 def add_user():
@@ -77,7 +78,6 @@ def add_user():
     email=request.form.get('uemail')
     password=request.form.get('upassword')
 
-    #cur.execute("UPDATE users SET password='{}'WHERE name = '{}'".format(password, name))
     cur.execute("""INSERT INTO  users(name,email,password) VALUES('{}','{}','{}')""".format(name,email,password))
     conn.commit()
     cur.execute("""SELECT * FROM `users` WHERE `email` LIKE '{}'""".format(email))
@@ -96,7 +96,7 @@ def suggestion():
     flash('You suggestion is succesfully sent!')
     return redirect('/index')
 
-@app.route('/add_user',methods=['POST'])
+@app.route('/register_validation',methods=['POST'])
 def register():
     if recaptcha.verify():
         flash('New User Added Successfully')
@@ -117,5 +117,4 @@ def get_bot_response():
     return str(chatbot.get_response(userText))
 
 if __name__ == "__main__":
-    # app.secret_key=""
-    app.run() 
+    app.run()
