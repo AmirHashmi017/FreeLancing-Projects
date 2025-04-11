@@ -1,6 +1,3 @@
-
-
-
 from chatbot import chatbot
 from flask import Flask, render_template, request, session, logging, url_for, redirect, flash
 from flask_recaptcha import ReCaptcha
