@@ -1,8 +1,11 @@
-Flask
-chatterbot
-chatterbot-corpus
-mysql-connector-python
-Flask-reCaptcha
-spacy
-python -m spacy download en_core_web_sm
-pip install markupsafe
+Flask==2.0.1
+chatterbot==1.0.8
+chatterbot-corpus==1.2.0
+setuptools>=41.0.0
+wheel>=0.33.0
+spacy>=3.1.0
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.1.0/en_core_web_sm-3.1.0.tar.gz
+Flask-reCaptcha==0.4.2
+mysql-connector-python==8.0.27
+mysql-connector-python-rf==2.2.2
+
